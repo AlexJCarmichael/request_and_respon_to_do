@@ -7,9 +7,11 @@ require_relative '../config/router'
 require_relative '../lib/all'
 
 module App
-  def App.todos
-    @all_todos ||= [
-      { body: "Wake up!"}
+  def App.tasks
+    @all_tasks ||= [
+      Task.new("Wake up!"),
+      Task.new("Can't wake up!"),
+      Task.new("Gotta wake up!")
     ]
   end
   def App.tweets
