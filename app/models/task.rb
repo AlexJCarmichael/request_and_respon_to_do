@@ -1,7 +1,8 @@
 class Task
-  attr_accessor :body, :completed
-  def initialize(body, completed = false)
+  attr_accessor :body, :id, :completed
+  def initialize(body, id, completed = false)
     @body = body
+    @id = id
     @completed = completed
   end
 

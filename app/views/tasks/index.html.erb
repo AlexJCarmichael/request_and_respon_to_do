@@ -1,7 +1,7 @@
 <h1> What needs to be done </h1>
 
-<ul>
+<ol>
   <% @tasks.each do |task| %>
     <li><%= task.body %> | <%= task.completed %></li>
   <% end %>
-</ul>
+</ol>
