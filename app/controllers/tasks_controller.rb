@@ -8,7 +8,7 @@ class TasksController < ApplicationController
       render_template 'tasks/index.html.erb'
     end
   end
-  
+
   def show
     task = App.tasks.find { |t| t.id == params[:id].to_i }
     if task
@@ -21,6 +21,18 @@ class TasksController < ApplicationController
     else
       render_not_found
     end
+  end
+
+  def create
+    task = Task.new(params["body"])
+    App.tasks.push(task)
+    if request[:format] == "json"
+      render task.to_json
+    else
+      @task = task
+      render_template 'tasks/create.html.erb'
+    end
+
   end
 
 
