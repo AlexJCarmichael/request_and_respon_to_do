@@ -7,7 +7,11 @@ require_relative '../config/router'
 require_relative '../lib/all'
 
 module App
-  # Place all data here inside of a method
+  def App.todos
+    @all_todos ||= [
+      { body: "Wake up!"}
+    ]
+  end
   def App.tweets
     # This is an example
     @all_tweets ||= [

@@ -1,6 +1,6 @@
 
 class ToDosController < ApplicationController
   def index
-    render_template '/test.html'
+    render App.todos.to_json
   end
 end
