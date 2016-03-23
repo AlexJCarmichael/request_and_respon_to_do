@@ -1,8 +1,9 @@
+$given_ids = 0
 class Task
   attr_accessor :body, :id, :completed
-  def initialize(body, id, completed = false)
+  def initialize(body, completed = false)
     @body = body
-    @id = id
+    @id = get_id
     @completed = completed
   end
 
@@ -11,5 +12,9 @@ class Task
     body: body,
     completed: completed,
     }.to_json
+  end
+
+  def get_id
+    $given_ids +=1
   end
 end

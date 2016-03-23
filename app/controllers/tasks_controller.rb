@@ -8,11 +8,12 @@ class TasksController < ApplicationController
       render_template 'tasks/index.html.erb'
     end
   end
+  
   def show
     task = App.tasks.find { |t| t.id == params[:id].to_i }
     if task
       if request[:format] == "json"
-        render task.body.to_json
+        render task.to_json
       else
         @to_print = task.body
         render_template 'tasks/show.html.erb'
@@ -26,7 +27,7 @@ class TasksController < ApplicationController
   private
 
   def render_not_found
-    if request[:format]
+    if request[:format] == "json"
       return_message = {
         message: "Task not found!",
         status: '404'

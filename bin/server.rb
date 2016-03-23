@@ -9,9 +9,9 @@ require_relative '../lib/all'
 module App
   def App.tasks
     @all_tasks ||= [
-      Task.new("Wake up!", 1),
-      Task.new("Can't wake up!", 2),
-      Task.new("Gotta wake up!", 3)
+      Task.new("Wake up!"),
+      Task.new("Can't wake up!"),
+      Task.new("Gotta wake up!")
     ]
   end
   def App.tweets
