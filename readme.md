@@ -1,47 +1,154 @@
 # Request / Response MVC!
 
-* Fork this repo
-* Clone this repo
-* Create your controllers in `app/controllers`
-  * Make sure they all inherit from `ApplicationController`
-* Create your routes in `config/router.rb`
-* Test out all the routes from the assignment using Postman
-* All responses should be in JSON format.
+This app will follow the Model, View, Controller method that rails uses. The user can create and view tasks for a to do list. This is accomplished with the CRUD method of persistant storage. This readme will break down how each element of CRUD is implemented in this program.
 
+All actions are preformed by accessing a server with 
 
-* Run the server with `ruby bin/server.rb`
-  * Please note: The server will need to be restarted every time you change your code.
-* The server file _should_ be loading all your files in `app/controllers` and `app/models`. It has also loaded `pry` and `json` for you.
+```http://localhost:3001/tasks```
 
-
-* You will be using the Postman app for any requests that are not `GET` requests. 
-* All `GET` requests can be displayed directly in the browser by navigating to the URL requested.
-* In the assignment instructions, if the type of the request is not specified, it can be assumed to be `GET`.
-
-
-## Defining Routes
-
-- In `config/router.rb` you will write your routes using the private methods that are provided.
-- If a route takes an id, you can't create a route for every possible number, so you will use a 'dynamic route'.
-- A 'dynamic route' looks like this `:id` and the router will look for anything that fits inside of that.
-- If you had a route defined like this `get('/tweets/:id, TweetsController, :show)` then it would match these urls:
-  - `/tweets/1`
-  - `/tweets/99999`
-  - `/tweets/foobar`
-  - `/tweets/2/edit` <- You probably dont want your show route to match your edit route and thats why..
-- **Orders matters** with routes in the route file. They are searched from top to bottom and the search stops the first time the router finds a valid route.
-- So your _most specific_ routes need to go first.
-
-
-## Creating a controller
-
-- All controllers should exist inside of `app/controllers/` and their name should follow a pattern. `tweets_controller.rb`
-- Notice that 'tweets' is plural.
-- The class must also inherit from `ApplicationController` to work properly with the router.
-- An empty `tweets_controller.rb` would look something like this:
+All of the tasks are Ruby objects which have three values, a body containing the task, a completion status which is set to false by default, and an ID which is created based on how many tasks currently exist. The only argument that needs to be provided to create a new class is a body argument.
 
 ```rb
-class TweetsController < ApplicationController
-  # your actions go here...
+# ./app/models/task.rb
+$given_ids = 0
+class Task
+  attr_accessor :body, :id, :completed
+  def initialize(body, completed = false)
+    @body = body
+    @id = get_id
+    @completed = completed
+  end
+
+  def to_json(_ = nil)
+   {
+    body: body,
+    completed: completed,
+    }.to_json
+  end
+
+  def get_id
+    $given_ids +=1
+  end
 end
+```
+
+###Create
+In order to create a new task the server (http://localhost:3001/tasks) must be given a post command. The post HTTP command must be sent with a body message that will communicate with the body argument of the task in order to create  new task.
+
+```rb
+def create
+    task = Task.new(params["body"])
+    App.tasks.push(task)
+    if request[:format] == "json"
+      render task.to_json
+    else
+      @task = task
+      render_template 'tasks/create.html.erb'
+    end
+  end
+```
+###Update
+In order to update a task the server must be told which task to update (http://localhost:3001/tasks/:ID with ID being the number of the task) with a puts HTTP command. Along with the puts command a body message must be sent. This body message can have up to two arguments, one that speaks to the body variable of the task and one that speaks to the completed variable of the task.
+
+```rb
+  def update
+    task = App.tasks.find { |t| t.id == params[:id].to_i }
+    if params["body"] && params["completed"]
+      task.body = params["body"]
+      task.completed = params["completed"]
+      if request[:format] == "json"
+        render task.to_json
+      else
+        @task = task
+        render_template 'tasks/update.html.erb'
+      end
+    elsif params["body"]
+      task.body = params["body"]
+      if request[:format] == "json"
+        render task.to_json
+      else
+        @task = task
+        render_template 'tasks/update.html.erb'
+      end
+    elsif params["completed"]
+      task.completed = params["completed"]
+      if request[:format] == "json"
+        render task.to_json
+      else
+        @task = task
+        render_template 'tasks/update.html.erb'
+      end
+    else
+      render_not_found
+    end
+  end
+```
+
+###Read
+
+The tasks can be read either as a list or individually. To read the entire list the server must be given the HTTP command GET along with http://localhost:3001/tasks.
+
+```rb
+def index
+    if request[:format] == "json"
+      render App.tasks.to_json
+    else
+      @tasks = App.tasks
+      render_template 'tasks/index.html.erb'
+    end
+  end
+```
+An individual task can be read by giving the HTTP command GET  along with http://localhost:3001/tasks/:id with the :id being the number of the task you wish to display.
+
+```rb
+def show
+    task = App.tasks.find { |t| t.id == params[:id].to_i }
+    if task
+      if request[:format] == "json"
+        render task.to_json
+      else
+        @to_print = task.body
+        render_template 'tasks/show.html.erb'
+      end
+    else
+      render_not_found
+    end
+  end
+```
+
+###Delete
+Deleting an individual task is accomplished by giving the server the HTTP command Delete and http://localhost:3001/tasks/:id with the :id being the number of the task you wish to delete.
+
+```rb
+def destroy
+    task = App.tasks.find { |t| t.id == params[:id].to_i }
+    if task
+      App.tasks.delete(task)
+      if request[:format] == "json"
+        render task.to_json
+      else
+        @task = task
+        render_template 'tasks/delete.html.erb'
+      end
+    else
+      render_not_found
+    end
+  end
+```
+
+###Display
+All of the tasks display as HTML by default. Json can be displayed by adding .json to the url request. Each of the methods above call a method of render_not_found as an esle statement. Render_not_found will give a 404 status back as well as displaying a message in either HTML or json depending on the url.
+
+```rb
+def render_not_found
+    if request[:format] == "json"
+      return_message = {
+        message: "Task not found!",
+        status: '404'
+      }.to_json
+      render return_message, status: "404 NOT FOUND"
+    else
+      render_template 'tasks/not_found.html.erb', status: "404 NOT FOUND"
+    end
+  end
 ```

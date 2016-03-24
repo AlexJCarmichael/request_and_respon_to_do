@@ -32,7 +32,53 @@ class TasksController < ApplicationController
       @task = task
       render_template 'tasks/create.html.erb'
     end
+  end
 
+  def update
+    task = App.tasks.find { |t| t.id == params[:id].to_i }
+    if params["body"] && params["completed"]
+      task.body = params["body"]
+      task.completed = params["completed"]
+      if request[:format] == "json"
+        render task.to_json
+      else
+        @task = task
+        render_template 'tasks/update.html.erb'
+      end
+    elsif params["body"]
+      task.body = params["body"]
+      if request[:format] == "json"
+        render task.to_json
+      else
+        @task = task
+        render_template 'tasks/update.html.erb'
+      end
+    elsif params["completed"]
+      task.completed = params["completed"]
+      if request[:format] == "json"
+        render task.to_json
+      else
+        @task = task
+        render_template 'tasks/update.html.erb'
+      end
+    else
+      render_not_found
+    end
+  end
+
+  def destroy
+    task = App.tasks.find { |t| t.id == params[:id].to_i }
+    if task
+      App.tasks.delete(task)
+      if request[:format] == "json"
+        render task.to_json
+      else
+        @task = task
+        render_template 'tasks/delete.html.erb'
+      end
+    else
+      render_not_found
+    end
   end
 
 
