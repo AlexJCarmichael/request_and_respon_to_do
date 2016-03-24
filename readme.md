@@ -4,7 +4,9 @@ This app will follow the Model, View, Controller method that rails uses. The use
 
 All actions are preformed by accessing a server with 
 
-```http://localhost:3001/tasks```
+```
+http://localhost:3001/tasks
+```
 
 All of the tasks are Ruby objects which have three values, a body containing the task, a completion status which is set to false by default, and an ID which is created based on how many tasks currently exist. The only argument that needs to be provided to create a new class is a body argument.
 
